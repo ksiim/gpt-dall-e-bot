@@ -70,7 +70,8 @@ async def premium_command(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         text=await generate_rates_info_text(),
-        reply_markup=buy_premium_markup
+        reply_markup=buy_premium_markup,
+        parse_mode="HTML"
     )
     
 @dp.callback_query(F.data.startswith("change_to"))
