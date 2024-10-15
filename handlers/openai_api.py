@@ -4,6 +4,7 @@ from models.dbs.enums import *
 from models.dbs.models import *
 from models.dbs.orm import Orm
 
+
 class OpenAI_API:
     SYSTEM_MESSAGE = """
     You are an advanced AI assistant designed to provide accurate, concise, and helpful responses. Your primary goal is to assist users with their queries by providing clear and relevant information. Follow these guidelines to maximize your efficiency:
