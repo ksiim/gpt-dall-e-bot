@@ -58,11 +58,10 @@ class OpenAI_API:
         return messages
 
     async def generate_image(self, query):
-        if await self.validate_request(self.chat_model.name):
+        if await self.validate_request(self.image_model.name):
             response = await self.openai.images.generate(
                 model=self.image_model.value.lower(),
-                prompt=
-                query
+                prompt=query
             )
             
             await Orm.update_count_of_requests(self.image_model.name, self.user)
