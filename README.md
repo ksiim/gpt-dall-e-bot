@@ -1,12 +1,11 @@
-# aiogram3.x-bot-template
-template for aiogram3.x bots
+# ChatGPT + Dall-E bot
 
 # commands
 to start:
 ~~~
 poetry init
 ~~~
-then press enter
+then press enter a lot
 then you need to enter command:
 ~~~
 poetry shell

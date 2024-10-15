@@ -1,6 +1,15 @@
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Загрузка переменных из .env файла
+
+load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+DB_NAME = os.getenv('DB_NAME')
+DB_DIR = os.path.join(os.getcwd(), DB_NAME)
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_HOST = os.getenv('DB_HOST')
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+PAYMENTS_TOKEN = os.getenv('PAYMENTS_TOKEN')

@@ -1,16 +1,15 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import delete
+from config import DATABASE_URL, DB_NAME
 import os
 
-DB_NAME = 'tg_bot.db'
-DB_DIR = os.path.join(os.getcwd(), DB_NAME)
-
-engine = create_async_engine(f'sqlite+aiosqlite:///{DB_DIR}')
+engine = create_async_engine(DATABASE_URL)
 Session = async_sessionmaker(engine)
 
 Base = declarative_base()
 
 async def create_database():
-    if not os.path.exists(DB_NAME):
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+            
