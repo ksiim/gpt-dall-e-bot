@@ -21,13 +21,13 @@ discount = {
 }
 
 async def generate_profile_text(user: User):
-    return f"""Это ваш профиль
-ID: {user.telegram_id}
-Подписка: {await rate_name(user.rate.id)}
-{"\n" if user.rate_id > 1 else "Чтобы добавить подписку, нажмите /premium\n"}
-**Лимиты**
-{await generate_limits_text(user)}
-Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"""
+    return {f'Это ваш профиль\n' +
+f'ID: {user.telegram_id}\n'
+f'Подписка: {await rate_name(user.rate.id)}\n'
+f'{"\n" if user.rate_id > 1 else "Чтобы добавить подписку, нажмите /premium\n"}\n'
+f"**Лимиты**\n"
+f"{await generate_limits_text(user)}\n"
+f"Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"}
 
 async def rate_name(rate_id):
     match rate_id:
