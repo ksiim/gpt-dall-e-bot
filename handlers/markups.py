@@ -27,7 +27,10 @@ f'Подписка: {await rate_name(user.rate.id)}\n'
 f'{"\n" if user.rate_id > 1 else "Чтобы добавить подписку, нажмите /premium\n"}\n'
 f"**Лимиты**\n"
 f"{await generate_limits_text(user)}\n"
-f"Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"}
+f"Обновление лимитов {get_update_frequency(user)} в 00:00"}
+
+def get_update_frequency(user):
+    return 'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'
 
 async def rate_name(rate_id):
     match rate_id:
