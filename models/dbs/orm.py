@@ -238,7 +238,7 @@ class Orm:
         if await cls.get_user_by_telegram_id(message.from_user.id) is None:
             user = User(
                 full_name=message.from_user.full_name,
-                telegram_id=message.from_user.id,
+                telegram_id=int(message.from_user.id),
                 username=message.from_user.username
             )
             await cls.save_user(user)
