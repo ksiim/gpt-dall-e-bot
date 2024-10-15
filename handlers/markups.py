@@ -27,7 +27,7 @@ ID: {user.telegram_id}
 {"\n" if user.rate_id > 1 else "Чтобы добавить подписку, нажмите /premium\n"}
 **Лимиты**
 {await generate_limits_text(user)}
-Обновление лимитов {"каждую неделю в понедельник" if user.rate.name == "free" else "каждый день"} в 00:00"""
+Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"""
 
 async def rate_name(rate_id):
     match rate_id:
