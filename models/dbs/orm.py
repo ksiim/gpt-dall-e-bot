@@ -55,6 +55,7 @@ class Orm:
             rates = (await session.execute(query)).unique().scalars().all()
             if not rates:
                 await Orm.create_free_rate()
+                await Orm.create_payable_rates()
             elif len(rates) == 1:
                 await Orm.create_payable_rates()
     
@@ -202,9 +203,9 @@ class Orm:
                 price_6=0,
                 price_12=0,
                 models_limits=[
-                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=100),
-                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=100),
-                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=100),
+                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=50),
+                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=0),
+                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=2),
                 ]
             )
             session.add(rate)
