@@ -51,7 +51,7 @@ class Orm:
     async def fill_rates():
         async with Session() as session:
             query = select(Rate).join(ModelLimit)
-            rates = (await session.execute(query)).scalars().all()
+            rates = (await session.execute(query)).unique().scalars().all()
             if not rates:
                 await Orm.create_free_rate()
             elif len(rates) == 1:
