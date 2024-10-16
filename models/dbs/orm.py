@@ -39,9 +39,9 @@ class Orm:
                 price_6=2399,
                 price_12=3899,
                 models_limits=[
-                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=100),
-                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=50),
-                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=10),
+                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=200),
+                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=100),
+                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=20),
                 ]
             )
             session.add(rate_1)
