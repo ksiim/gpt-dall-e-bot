@@ -44,7 +44,8 @@ class Orm:
                     ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=10),
                 ]
             )
-            session.add(rate_1, rate_2)
+            session.add(rate_1)
+            session.add(rate_2)
             await session.commit()
     
     @staticmethod
