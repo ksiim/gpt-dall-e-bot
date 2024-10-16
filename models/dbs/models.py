@@ -15,7 +15,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(nullable=True)
     admin: Mapped[bool] = mapped_column(default=False)
     chat_model: Mapped[ChatModelEnum] = mapped_column(nullable=True, default=ChatModelEnum.GPT_4O_MINI)
-    image_model: Mapped[ImageModelEnum] = mapped_column(nullable=True, default=ImageModelEnum.DALL_E_2)
+    image_model: Mapped[ImageModelEnum] = mapped_column(nullable=True, default=ImageModelEnum.DALL_E_3)
     rate_id: Mapped[int] = mapped_column(ForeignKey('rate.id', ondelete="CASCADE"), index=True)
     last_activity_time: Mapped[datetime.datetime] = mapped_column(nullable=True, default=datetime.datetime.now)
     registration_time: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now, nullable=True)

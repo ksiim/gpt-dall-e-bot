@@ -18,6 +18,46 @@ async def run_async_before_insert_listener(target):
 class Orm:
     
     @staticmethod
+    async def create_payable_rates():
+        async with Session() as session:
+            rate_1 = Rate(
+                name='plus',
+                price=299,
+                price_3=799,
+                price_6=1399,
+                price_12=2490,
+                models_limits=[
+                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=100),
+                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=50),
+                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=10),
+                ]
+            )
+            rate_2 = Rate(
+                name='pro',
+                price=499,
+                price_3=1299,
+                price_6=2399,
+                price_12=3899,
+                models_limits=[
+                    ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=100),
+                    ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=50),
+                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=10),
+                ]
+            )
+            session.add(rate_1, rate_2)
+            await session.commit()
+    
+    @staticmethod
+    async def fill_rates():
+        async with Session() as session:
+            query = select(Rate)
+            rates = (await session.execute(query)).scalars().all()
+            if not rates:
+                await Orm.create_free_rate()
+            elif len(rates) == 1:
+                await Orm.create_payable_rates()
+    
+    @staticmethod
     async def end_of_subscription():
         async with Session() as session:
             query = (
@@ -157,10 +197,13 @@ class Orm:
             rate = Rate(
                 name='free',
                 price=0,
+                price_3=0,
+                price_6=0,
+                price_12=0,
                 models_limits=[
                     ModelLimit(model=ChatModelEnum.GPT_4O_MINI.name, daily_limit=100),
                     ModelLimit(model=ChatModelEnum.GPT_4O.name, daily_limit=100),
-                    ModelLimit(model=ImageModelEnum.DALL_E_2.name, daily_limit=100),
+                    ModelLimit(model=ImageModelEnum.DALL_E_3.name, daily_limit=100),
                 ]
             )
             session.add(rate)

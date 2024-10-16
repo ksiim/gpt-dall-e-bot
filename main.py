@@ -11,6 +11,7 @@ import handlers.middlewares
 import handlers.openai_api
 import handlers.tasks
 from models.databases import create_database
+from models.dbs.orm import Orm
 
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +29,7 @@ async def main():
     scheduler.start()
     
     await create_database()
+    await Orm.fill_rates()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

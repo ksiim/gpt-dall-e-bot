@@ -6,7 +6,7 @@ class ChatModelEnum(Enum):
     GPT_4O_MINI = "GPT-4o-mini"
 
 class ImageModelEnum(Enum):
-    DALL_E_2 = "Dall-E-2"
+    DALL_E_3 = "Dall-E-3"
     
 class TypeOfRequestEnum(Enum):
     CHAT = "chat"
