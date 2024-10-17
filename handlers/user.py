@@ -68,7 +68,7 @@ async def premium_command(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         text=await generate_rates_info_text(),
-        reply_markup=buy_premium_markup,
+        reply_markup=await generate_rates_keyboard(),
         parse_mode="HTML"
     )
     
