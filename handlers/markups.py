@@ -60,9 +60,7 @@ async def generate_payment_keyboard(payment_link: str, payment_id: str):
             [
                 InlineKeyboardButton(
                     text="Оплатить",
-                    web_app=WebAppInfo(
-                        url=payment_link,
-                    )
+                    url=payment_link,
                 ),
                 InlineKeyboardButton(
                     text="Проверить оплату",
