@@ -25,7 +25,7 @@ class YooPay:
         response = Payment.create({
             "receipt": {
                 "customer": {
-                    "email": "makskrutchev@gmail.com",
+                    "email": "tempo@gmail.com",
                 },
                 "items": [
                     {
