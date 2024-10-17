@@ -1,6 +1,6 @@
 import asyncio
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 from bot import bot
 
@@ -60,7 +60,9 @@ async def generate_payment_keyboard(payment_link: str, payment_id: str):
             [
                 InlineKeyboardButton(
                     text="Оплатить",
-                    url=payment_link
+                    web_app=WebAppInfo(
+                        url=payment_link,
+                    )
                 ),
                 InlineKeyboardButton(
                     text="Проверить оплату",
