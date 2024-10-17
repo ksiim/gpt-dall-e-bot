@@ -2,10 +2,6 @@ import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from app.app import app
-
-import uvicorn
-
 from bot import dp, bot
 
 import logging
@@ -25,21 +21,13 @@ async def main():
     dp.message.middleware(handlers.middlewares.OnlineMiddleware())
     
     initialize_scheduler()
-    
-    server = initialize_uvicorn()
    
     await create_database(),
     
     await asyncio.gather(
         Orm.fill_rates(),
         dp.start_polling(bot),
-        server.serve()
     )
-    
-def initialize_uvicorn():
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
-    server = uvicorn.Server(config)
-    return server
 
 def initialize_scheduler():
     scheduler = AsyncIOScheduler()
