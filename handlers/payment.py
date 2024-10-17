@@ -81,7 +81,7 @@ async def check_payment_callback(callback: CallbackQuery):
         rate_id = (await Orm.get_rate_by_name(rate_name)).id
         await Orm.update_subscription(user, period, rate_id)
 
-        await callback.message.answer("Поздравляю! Вы успешно обновили свой тарифный план")
+        await callback.message.answer("Поздравляю! Подписка успешно активирована, проверьте в разделе /profile")
     else:
         answer = await callback.message.answer("Оплата не прошла")
         
