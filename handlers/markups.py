@@ -160,7 +160,7 @@ async def generate_rates_keyboard():
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Получить" + " ".join([r.upper() for r in rate.name.split()]),
+                    text="Получить " + " ".join([r.upper() for r in rate.name.split()]),
                     callback_data=f"buy_rate:{rate.id}"
                 ) for rate in rates
             ]
