@@ -11,6 +11,7 @@ from .callbacks import *
 
 
 waiting_text = "Ваш запрос принят, ожидайте ответа..."
+
 async def generate_rates_info_text():
     return f"""
 Доступ к лучшим AI-сервисам прямо в Telegram:
@@ -52,6 +53,22 @@ ID: {user.telegram_id}
 **Лимиты**
 {await generate_limits_text(user)}
 Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"""
+
+async def generate_payment_keyboard(payment_link: str, payment_id: str):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Оплатить",
+                    url=payment_link
+                ),
+                InlineKeyboardButton(
+                    text="Проверить оплату",
+                    callback_data=f"check_payment:{payment_id}"
+                )
+            ]
+        ]
+    )
 
 async def rate_name(rate_id):
     match rate_id:

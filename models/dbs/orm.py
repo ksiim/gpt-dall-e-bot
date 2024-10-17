@@ -87,6 +87,13 @@ class Orm:
             query = select(Rate).where(Rate.id == rate_id)
             rate = (await session.execute(query)).unique().scalar_one_or_none()
             return rate
+        
+    @staticmethod
+    async def get_rate_by_name(rate_name):
+        async with Session() as session:
+            query = select(Rate).where(Rate.name == rate_name)
+            rate = (await session.execute(query)).unique().scalar_one_or_none()
+            return rate
     
     @staticmethod
     async def get_rates_for_sell():

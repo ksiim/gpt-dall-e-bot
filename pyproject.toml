@@ -17,6 +17,9 @@ apscheduler = "^3.10.4"
 alembic = "^1.13.3"
 psycopg2 = "^2.9.9"
 openai = "^1.51.0"
+fastapi = "^0.115.2"
+uvicorn = "^0.32.0"
+yookassa = "^3.3.0"
 
 
 [build-system]

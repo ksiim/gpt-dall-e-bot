@@ -1,10 +1,9 @@
 from aiogram import F
 from aiogram.filters.command import Command
-from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    Message, CallbackQuery, FSInputFile
+    Message, CallbackQuery
 )
-from aiogram.enums.chat_action import ChatAction
+from aiogram.fsm.context import FSMContext
 
 from bot import dp, bot
 
@@ -15,7 +14,6 @@ from .callbacks import *
 from .markups import *
 from .states import *
 from .filters import *
-from .openai_api import OpenAI_API
 
 
 @dp.message(Command('start'))
@@ -93,73 +91,4 @@ async def reset_context_command(message: Message, state: FSMContext):
     await message.answer(
         text="Контекст диалога очищен"
     )
-
-async def send_statistic_message(telegram_id):
-    await bot.send_message(
-        chat_id=telegram_id,
-        text=await generate_statistic_text()
-    )
-
-@dp.message(Command('stat'), IsAdmin())
-async def statistic_handler(message: Message):
-    await send_statistic_message(
-        telegram_id=message.from_user.id,
-    )
     
-@dp.message(Command("img"))
-async def image_command(message: Message, state: FSMContext):
-    await state.clear()
-    
-    user = await Orm.get_user_by_telegram_id(message.from_user.id)
-    prompt = message.text.split(" ", 1)[1]
-    
-    updating_message = await message.answer(
-        text=waiting_text
-    )
-    await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
-    
-    open_ai = OpenAI_API(user=user)
-    
-    image = await open_ai.generate_image(prompt)
-    
-    if image:
-        await updating_message.delete()
-        
-        await bot.send_photo(
-            chat_id=message.chat.id,
-            photo=
-            image,
-            caption=prompt
-        )
-    else:
-        await updating_message.edit_text(
-            text="Превышен лимит запросов",
-            reply_markup=buy_premium_markup
-        )
-    await state.clear()
-    
-@dp.message(F.text)
-async def proccess_text_query(message: Message, state: FSMContext):
-    user = await Orm.get_user_by_telegram_id(message.from_user.id)
-    query = message.text
-    
-    updating_message = await message.answer(
-        text=waiting_text
-    )
-    await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
-
-    open_ai = OpenAI_API(user=user)
-    
-    answer = await open_ai(query)
-    
-    if answer:
-        await updating_message.delete()
-        
-        await message.answer(
-            text=answer
-        )
-    else:
-        await updating_message.edit_text(
-            text="Превышен лимит запросов",
-            reply_markup=buy_premium_markup
-        )
