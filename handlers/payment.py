@@ -4,6 +4,9 @@ from aiogram.types import Message, CallbackQuery, PreCheckoutQuery, LabeledPrice
 from bot import dp, bot
 
 from config import PAYMENTS_TOKEN
+from yookassa import Configuration
+
+from config import YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY
 
 from models.dbs.orm import Orm
 from models.dbs.models import *
@@ -59,6 +62,9 @@ async def get_period(callback: CallbackQuery):
 
 async def card_callback(telegram_id: int, rate: Rate, period: int, total_amount: int):
     yoopay = YooPay(total_amount, rate.name, period, telegram_id)
+    Configuration.account_id = YOOKASSA_SHOP_ID
+    Configuration.secret_key = YOOKASSA_SECRET_KEY
+    Configuration.configure(YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)
     response = await yoopay.create_payment()
     payment_id = response.id
     payment_link = response.confirmation.confirmation_url
