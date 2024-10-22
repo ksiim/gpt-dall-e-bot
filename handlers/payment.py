@@ -3,8 +3,6 @@ from aiogram.types import Message, CallbackQuery, PreCheckoutQuery, LabeledPrice
 
 from bot import dp, bot
 
-from config import PAYMENTS_TOKEN
-
 from models.dbs.orm import Orm
 from models.dbs.models import *
 
