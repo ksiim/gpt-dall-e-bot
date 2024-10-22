@@ -8,14 +8,14 @@ from config import YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY
 from handlers.markups import *
 
 
-Configuration.account_id = YOOKASSA_SHOP_ID
-Configuration.secret_key = YOOKASSA_SECRET_KEY
 
 class YooPay:
     shop_id = YOOKASSA_SHOP_ID
     secret_key = YOOKASSA_SECRET_KEY
     
     def __init__(self, amount: int, rate_name: str, period: int, telegram_id: int):
+        Configuration.account_id = YOOKASSA_SHOP_ID
+        Configuration.secret_key = YOOKASSA_SECRET_KEY
         self.amount = amount
         self.rate_name = rate_name
         self.period = period
