@@ -45,10 +45,16 @@ class OpenAI_API:
             await Orm.add_context_message(self.user, response.choices[0].message.content, "assistant")  
             
             await Orm.update_count_of_requests(self.chat_model.name, self.user)
-                      
-            return response.choices[0].message.content
+            
+            answer = response.choices[0].message.content
+            answers = await self.split_text(answer)
+            return answers
 
         return None
+    
+    async def split_text(self, text, length=4095):
+        parts = [text[i:i+length] for i in range(0, len(text), length)]
+        return parts
 
     async def get_chat_messages(self, query):
         messages = await Orm.get_context_messages(self.user) + [

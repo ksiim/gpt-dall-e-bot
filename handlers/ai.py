@@ -1,3 +1,4 @@
+from ast import parse
 from aiogram import F
 from aiogram.filters.command import Command
 from aiogram.types import (
@@ -58,14 +59,17 @@ async def proccess_text_query(message: Message, state: FSMContext):
 
     open_ai = OpenAI_API(user=user)
     
-    answer = await open_ai(query)
+    answers_list = await open_ai(query)
     
-    if answer:
+    if answers_list:
         await updating_message.delete()
         
-        await message.answer(
-            text=answer
-        )
+        for answer in answers_list:
+            await message.answer(
+                text=answer,
+                parse_mode=None
+                
+            )
     else:
         await updating_message.edit_text(
             text="Превышен лимит запросов",
