@@ -7,12 +7,6 @@ from config import YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY
 
 from handlers.markups import *
 
-Configuration.account_id = YOOKASSA_SHOP_ID
-Configuration.secret_key = YOOKASSA_SECRET_KEY
-Configuration.configure(YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)
-
-print(YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)
-
 class YooPay:
     shop_id = YOOKASSA_SHOP_ID
     secret_key = YOOKASSA_SECRET_KEY
@@ -24,6 +18,9 @@ class YooPay:
         self.telegram_id = telegram_id
     
     async def create_payment(self):
+        Configuration.account_id = YOOKASSA_SHOP_ID
+        Configuration.secret_key = YOOKASSA_SECRET_KEY
+        Configuration.configure(YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)
         response = Payment.create({
             "receipt": {
                 "customer": {
