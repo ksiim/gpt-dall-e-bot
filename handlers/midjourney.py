@@ -96,3 +96,4 @@ async def reroll_callback(callback: CallbackQuery):
         await process_midjourney_progress(callback.message, hash)
     else:
         await callback.answer("Ошибка создания задачи")
+        

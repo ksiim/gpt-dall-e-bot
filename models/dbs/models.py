@@ -24,6 +24,7 @@ class User(Base):
     rate: Mapped['Rate'] = relationship('Rate', back_populates='users', lazy="joined")
     count_of_requests: Mapped[List['CountOfRequests']] = relationship('CountOfRequests', back_populates='user')
     messages: Mapped[List['AIMessage']] = relationship('AIMessage', back_populates='user')
+    midjourney_prompts: Mapped[List['MidJourneyPrompts']] = relationship('MidJourneyPrompts', back_populates='user')
     
     @property
     def count_of_requests_dict(self):
