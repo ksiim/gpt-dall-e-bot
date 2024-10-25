@@ -10,6 +10,7 @@ import handlers
 
 import handlers.middlewares
 import utils.openai_api
+import utils.midjourney
 import utils.tasks
 from models.databases import create_database
 from models.dbs.orm import Orm
@@ -18,16 +19,20 @@ from models.dbs.orm import Orm
 logging.basicConfig(level=logging.INFO)
 
 async def main():
-    dp.message.middleware(handlers.middlewares.OnlineMiddleware())
+    # dp.message.middleware(handlers.middlewares.OnlineMiddleware())
     
-    initialize_scheduler()
+    # initialize_scheduler()
    
-    await create_database(),
+    # await create_database(),
     
-    await asyncio.gather(
-        Orm.fill_rates(),
-        dp.start_polling(bot),
-    )
+    # await asyncio.gather(
+    #     Orm.fill_rates(),
+    #     dp.start_polling(bot),
+    # )
+    mj = utils.midjourney.MidJourney()
+    # print(await mj.generate_image("Синий океан и зеленая трава"))
+    print(await mj.check_image_url("dfd8df09-f94e-4406-a656-d2c112aca6cd"))
+    
 
 def initialize_scheduler():
     scheduler = AsyncIOScheduler()
