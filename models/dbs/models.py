@@ -75,3 +75,15 @@ class AIMessage(Base):
     content: Mapped[str] = mapped_column(nullable=True)
     role: Mapped[str] = mapped_column(nullable=True)
     time: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    
+class MidJourneyPrompts(Base):
+    __tablename__ = 'midjourney_prompts'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    prompt: Mapped[str] = mapped_column(nullable=True)
+    hash: Mapped[str] = mapped_column(nullable=True)
+    status: Mapped[str] = mapped_column(nullable=True)
+    progress: Mapped[int] = mapped_column(nullable=True)
+    result: Mapped[str] = mapped_column(nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"), index=True)
+    user: Mapped[User] = relationship('User', back_populates='midjourney_prompts')

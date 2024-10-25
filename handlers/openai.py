@@ -1,4 +1,3 @@
-from ast import parse
 from aiogram import F
 from aiogram.filters.command import Command
 from aiogram.types import (

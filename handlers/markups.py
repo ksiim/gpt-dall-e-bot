@@ -45,6 +45,54 @@ discount = {
     12: 0.8
 }
 
+async def generate_midjourney_markup(hash):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='U1',
+                    callback_data=f"upscale:{hash}:1"
+                ),
+                InlineKeyboardButton(
+                    text='U2',
+                    callback_data=f"upscale:{hash}:2"
+                ),
+                InlineKeyboardButton(
+                    text='U3',
+                    callback_data=f"upscale:{hash}:3"
+                ),
+                InlineKeyboardButton(
+                    text='U4',
+                    callback_data=f"upscale:{hash}:4"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='V1',
+                    callback_data=f"variation:{hash}:1"
+                ),
+                InlineKeyboardButton(
+                    text='V2',
+                    callback_data=f"variation:{hash}:2"
+                ),
+                InlineKeyboardButton(
+                    text='V3',
+                    callback_data=f"variation:{hash}:3"
+                ),
+                InlineKeyboardButton(
+                    text='V4',
+                    callback_data=f"variation:{hash}:4"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🔄",
+                    callback_data=f"reroll:{hash}"
+                )
+            ]
+        ]
+    )
+
 async def generate_profile_text(user: User):
     return f"""Это ваш профиль
 ID: {user.telegram_id}

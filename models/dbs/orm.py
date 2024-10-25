@@ -18,6 +18,30 @@ async def run_async_before_insert_listener(target):
 class Orm:
     
     @staticmethod
+    async def update_midjourney_task(task_hash, status, result, progress):
+        async with Session() as session:
+            query = (
+                update(MidJourneyPrompts)
+                .where(MidJourneyPrompts.hash == task_hash)
+                .values(
+                    status=status,
+                    result=result,
+                    progress=progress
+                )
+            )
+            await session.execute(query)
+            await session.commit()
+    
+    @staticmethod
+    async def add_midjourney_task(user_id, task_hash, prompt):
+        async with Session() as session:
+            midjourney_task = MidJourneyPrompts(user_id=user_id, hash=task_hash, prompt=prompt)
+            session.add(midjourney_task)
+            await session.commit()
+            await session.refresh(midjourney_task)
+            return midjourney_task
+    
+    @staticmethod
     async def create_payable_rates():
         async with Session() as session:
             rate_1 = Rate(
