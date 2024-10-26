@@ -53,7 +53,6 @@ async def process_midjourney_progress(message: Message, hash: str, method='imagi
         await process_midjourney_progress(message, hash, method)
         
     elif status == "done":
-        await message.delete()
         
         file_name = await midjourney.save_image(url)
         photo = FSInputFile(file_name)
