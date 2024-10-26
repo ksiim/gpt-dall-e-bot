@@ -1,11 +1,11 @@
 import datetime
 from sqlalchemy import ForeignKey, BigInteger
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.ext.associationproxy import association_proxy
 from models.databases import Base
 from typing import List
 from .enums import *
-    
+
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -20,7 +20,7 @@ class User(Base):
     last_activity_time: Mapped[datetime.datetime] = mapped_column(nullable=True, default=datetime.datetime.now)
     registration_time: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now, nullable=True)
     subscription_end_time: Mapped[datetime.datetime] = mapped_column(nullable=True)
-    remaining_midjourney_generations: Mapped[int] = mapped_column(default=0)
+    remaining_midjourney_generations: Mapped[int] = mapped_column(default=0, nullable=True)
 
     rate: Mapped['Rate'] = relationship('Rate', back_populates='users', lazy="joined")
     count_of_requests: Mapped[List['CountOfRequests']] = relationship('CountOfRequests', back_populates='user')
@@ -90,3 +90,10 @@ class MidJourneyPrompts(Base):
     result: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"), index=True)
     user: Mapped[User] = relationship('User', back_populates='midjourney_prompts')
+
+class MidJourneyPrices(Base):
+    __tablename__ = 'midjourney_prices'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    price: Mapped[int] = mapped_column(nullable=True)
+    count_of_generations: Mapped[int] = mapped_column(nullable=True)

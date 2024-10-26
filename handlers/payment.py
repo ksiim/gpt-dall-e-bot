@@ -28,6 +28,34 @@ async def change_rate_handler(callback: CallbackQuery):
         text=text,
         reply_markup=await generate_rates_keyboard(),
     )
+    
+@dp.callback_query(F.data == "get_midjourney_package")
+async def get_midjourney_package(callback: CallbackQuery):
+    await callback.message.delete_reply_markup()
+    
+    await callback.message.answer(
+        text="Выберите пакет",
+        reply_markup=await generate_midjourney_packages_keyboard(),
+    )
+    
+@dp.callback_query(lambda callback: callback.data.startswith("buy_midjourney"))
+async def buy_midjourney_package(callback: CallbackQuery):
+    await callback.message.delete_reply_markup()
+    
+    package_id = int(callback.data.split(":")[-1])
+    
+    package = await Orm.get_midjourney_package_by_id(package_id)
+    
+    await callback.message.answer(
+        text=f"Вы выбрали пакет генераций {package.count_of_generations}шт. Его цена = {package.price}₽",
+    )
+    await card_callback(
+        type_='midjourney',
+        telegram_id=callback.from_user.id,
+        count_of_generations=package.count_of_generations,
+        total_amount=package.price,
+        package_id=package_id
+    )
 
 @dp.callback_query(lambda callback: callback.data.startswith("buy_rate"))
 async def choose_period(callback: CallbackQuery):
@@ -56,43 +84,73 @@ async def get_period(callback: CallbackQuery):
         total_amount = eval(f"rate.price_{period}")
     
     await callback.message.answer(
-        text=f"Вы выбрали тариф {rate.name} на {period} {await incline_by_period(period)}. Его цена = {total_amount}₽",
+        text=f"Вы выбрали тариф {rate.name} на {period} {await incline_by_period(period)}. Его цена {total_amount}₽",
     )
     await card_callback(callback.from_user.id, rate, period, total_amount)
 
-async def card_callback(telegram_id: int, rate: Rate, period: int, total_amount: int):
-    yoopay = YooPay(total_amount, rate.name, period, telegram_id)
-    Configuration.account_id = YOOKASSA_SHOP_ID
-    Configuration.secret_key = YOOKASSA_SECRET_KEY
-    Configuration.configure(YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)
-    response = await yoopay.create_payment()
+async def card_callback(type_='rate', telegram_id=None, rate=None, period=None, total_amount=None, count_of_generations=None, package_id=None):
+    yoopay = YooPay()
+    match type_:
+        case 'rate':
+            response = await yoopay.create_payment(
+                amount=total_amount,
+                rate_name=rate.name,
+                period=period,
+                telegram_id=telegram_id
+            )
+        case 'midjourney':
+            response = await yoopay.create_payment(
+                type_=type_,
+                amount=total_amount,
+                count_of_generations=count_of_generations,
+                package_id=package_id,
+                telegram_id=telegram_id,
+            )
     payment_id = response.id
     payment_link = response.confirmation.confirmation_url
     
     await bot.send_message(
         chat_id=telegram_id,
         text="Совершите оплату по ссылке ниже",
-        reply_markup=await generate_payment_keyboard(payment_link=payment_link, payment_id=payment_id)
+        reply_markup=await generate_payment_keyboard(payment_link=payment_link, payment_id=payment_id, type_=type_)
     )
     
 @dp.callback_query(lambda callback: callback.data.startswith("check_payment"))
 async def check_payment_callback(callback: CallbackQuery):
-    payment_id = callback.data.split(":")[-1]
+    _, type_, payment_id = callback.data.split(":")
     payment = await YooPay.payment_success(payment_id)
     if payment:
-        answer = await callback.message.answer("Оплата прошла успешно")
-        user = await Orm.get_user_by_telegram_id(callback.from_user.id)
-        period = int(payment.metadata["period"])
-        rate_name = payment.metadata["rate_name"]
-        rate_id = (await Orm.get_rate_by_name(rate_name)).id
-        await Orm.update_subscription(user, period, rate_id)
-
-        await callback.message.answer("Поздравляю! Подписка успешно активирована, проверьте в разделе /profile")
+        match type_:
+            case 'rate':
+                answer = await process_successful_rate_payment(callback, payment)
+            case 'midjourney':
+                answer = await process_successful_midjourney_payment(callback, payment)
     else:
         answer = await callback.message.answer("Оплата не прошла")
         
     await asyncio.sleep(3)
     await answer.delete()
+    
+async def process_successful_midjourney_payment(callback: CallbackQuery, payment):
+    answer = await callback.message.answer("Оплата прошла успешно")
+    user = await Orm.get_user_by_telegram_id(callback.from_user.id)
+    package_id = int(payment.metadata["package_id"])
+    package = await Orm.get_midjourney_package_by_id(package_id)
+    await Orm.add_midjourney_generations(user.telegram_id, package.count_of_generations)
+    
+    await callback.message.answer("Поздравляю! Пакет успешно активирован, проверьте в разделе /profile")
+
+    return answer
+
+async def process_successful_rate_payment(callback, payment):
+    answer = await callback.message.answer("Оплата прошла успешно")
+    user = await Orm.get_user_by_telegram_id(callback.from_user.id)
+    period = int(payment.metadata["period"])
+    rate_name = payment.metadata["rate_name"]
+    rate_id = (await Orm.get_rate_by_name(rate_name)).id
+    await Orm.update_subscription(user, period, rate_id)
+
+    await callback.message.answer("Поздравляю! Подписка успешно активирована, проверьте в разделе /profile")
 
 # async def card_callback(telegram_id: int, rate: Rate, period: int, total_amount: int):
 #     label = f"Покупка {rate.name} на {period} {await incline_by_period(period)}"

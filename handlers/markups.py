@@ -1,4 +1,5 @@
 import asyncio
+from sys import exception
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
@@ -6,34 +7,54 @@ from bot import bot
 
 from models.dbs.orm import Orm
 from models.dbs.models import *
+from utils import midjourney
 
 from .callbacks import *
 
 
 waiting_text = "Ваш запрос принят, ожидайте ответа..."
 
+exception_on_midjourney_text = "Ошибка создания задачи, возможно вы превысили лимит генераций, /premium для покупки"
+
 async def generate_rates_info_text():
+    free_rate = await Orm.get_rate_by_name("free")
+    plus_rate = await Orm.get_rate_by_name("plus")
+    pro_rate = await Orm.get_rate_by_name("pro")
+    free_rate_gpt_4o_mini = str(free_rate.daily_limit_dict[ChatModelEnum.GPT_4O_MINI.name])
+    plus_rate_gpt_4o_mini = str(plus_rate.daily_limit_dict[ChatModelEnum.GPT_4O_MINI.name])
+    plus_rate_dall_e = str(plus_rate.daily_limit_dict[ImageModelEnum.DALL_E_3.name])
+    plus_rate_price = str(plus_rate.price)
+    pro_rate_gpt_4o = str(pro_rate.daily_limit_dict[ChatModelEnum.GPT_4O.name])
+    pro_rate_gpt_4o_mini = str(pro_rate.daily_limit_dict[ChatModelEnum.GPT_4O_MINI.name])
+    pro_rate_dall_e = str(pro_rate.daily_limit_dict[ImageModelEnum.DALL_E_3.name])
+    pro_rate_price = str(pro_rate.price)
     return f"""
 Доступ к лучшим AI-сервисам прямо в Telegram:
 
 Бесплатно | ЕЖЕНЕДЕЛЬНО
-✔️ 50 текстовых запросов
+✔️ {free_rate_gpt_4o_mini} текстовых запросов
 ✔️ GPT-4o mini
 (Изменить модель в /model)
 
 ✅ PLUS | МЕСЯЦ
-✅ 100 запросов GPT-4o mini ежедневно
-✅ 50 запросов GPT-4o
-🌅 10 картинок Dall-E
+✅ {plus_rate_gpt_4o_mini} запросов GPT-4o mini ежедневно
+🌅 {plus_rate_dall_e} картинок Dall-E
 
-Стоимость: 299 р.
+Стоимость: {plus_rate_price} р.
 
 🔥Pro X2 | МЕСЯЦ
 ✌️ Увеличивает лимит в 2 раза:
-✅ 200 запросов GPT-4o mini ежедневно
-✅ 100 запроосв GPT-4o
-🌅 20 картинок Dall-E
-Стоимость: 499 р.
+✅ {pro_rate_gpt_4o} запросов GPT-4o mini ежедневно
+✅ {pro_rate_gpt_4o_mini} запроосв GPT-4o
+🌅 {pro_rate_dall_e} картинок Dall-E
+Стоимость: {pro_rate_price} р.
+
+Midjorney - ПАКЕТ
+
+🌄 от 50 до 500 генераций
+🌄 Midjorney 6.1 /mj
+✅ промпты на русском языке
+Стоимость: от 299 р.
 
 💬 По вопросам оплаты: @GPT_helpAi
 """
@@ -104,7 +125,7 @@ ID: {user.telegram_id}
 {await generate_limits_text(user)}
 Обновление лимитов {'каждую неделю в понедельник' if user.rate.name == 'free' else 'каждый день'} в 00:00"""
 
-async def generate_payment_keyboard(payment_link: str, payment_id: str):
+async def generate_payment_keyboard(payment_link: str, payment_id: str, type_='rate'):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -114,7 +135,7 @@ async def generate_payment_keyboard(payment_link: str, payment_id: str):
                 ),
                 InlineKeyboardButton(
                     text="Проверить оплату",
-                    callback_data=f"check_payment:{payment_id}"
+                    callback_data=f"check_payment:{type_}:{payment_id}"
                 )
             ]
         ]
@@ -158,11 +179,13 @@ async def generate_limits_text(user: User):
     image_model_enum_value = user.image_model.value
     image_model_enum_name = ImageModelEnum(image_model_enum_value).name
     limit_image = user.rate.daily_limit_dict[image_model_enum_name]
+    remaining_midjourney_generations = user.remaining_midjourney_generations
     return f"""✍️{chat_model_enum_value} - {limit_chat - await get_count_of_requests(chat_model_enum_name, user)}/{limit_chat}
 🖼{image_model_enum_value} - {limit_image - await get_count_of_requests(image_model_enum_name, user)}/{limit_image}
+🖼Midjourney - {remaining_midjourney_generations} шт.
 """
 
-async def get_count_of_requests(model: str, user):
+async def get_count_of_requests(model: str, user: User):
     count_of_requests = await Orm.get_count_of_requests(model, telegram_id=user.telegram_id)
     return count_of_requests
 
@@ -212,8 +235,29 @@ async def generate_rates_keyboard():
                     callback_data=f"buy_rate:{rate.id}"
                 ) for rate in rates
             ]
+        ] + [
+            [
+                InlineKeyboardButton(
+                    text="Получить пакет Midjourney",
+                    callback_data="get_midjourney_package"
+                )
+            ]
         ]
     )
+    
+async def generate_midjourney_packages_keyboard():
+    mj_prices = await Orm.get_midjourney_counts_and_prices()
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=f"{mj_price.count_of_generations} генераций - {mj_price.price}₽",
+                    callback_data=f"buy_midjourney:{mj_price.id}"
+                )
+            ] for mj_price in mj_prices
+        ]
+    )
+    return keyboard
     
 async def incline_by_period(period):
     if period == 1:

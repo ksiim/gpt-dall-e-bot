@@ -26,6 +26,7 @@ async def main():
     await create_database(),
     
     await asyncio.gather(
+        Orm.fill_midjourney_prices(),
         Orm.fill_rates(),
         dp.start_polling(bot),
     )

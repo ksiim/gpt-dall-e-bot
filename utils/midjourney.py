@@ -35,11 +35,23 @@ class MidJourney:
     USERAPI_UI_API_KEY = USERAPI_UI_API_KEY
     WEBHOOK_URL = ""
     
-    def __init__(self):
-        pass
+    def __init__(self, telegram_id=None):
+        self.telegram_id = telegram_id
+        
+    async def is_limit_reached(self):
+        """Проверка на превышение лимита"""
+        user = await Orm.get_user_by_telegram_id(self.telegram_id)
+        count_of_requests = user.remaining_midjourney_generations
+        
+        if count_of_requests <= 0:
+            return True
+        return False
 
     async def generate_image(self, prompt):
         """Создание изображения по заданному запросу (prompt)"""
+        
+        if await self.is_limit_reached():
+            return None
         
         headers = await self.generate_headers()
         data = await self.generate_data(prompt)
@@ -47,6 +59,7 @@ class MidJourney:
             response = await client.post(f"{self.API_URL}imagine", headers=headers, json=data)
 
         if response.status_code == 200:
+            await Orm.decrement_midjourney_generations(self.telegram_id)
             data = response.json()
             hash = data['hash']
             return hash
@@ -93,6 +106,10 @@ class MidJourney:
         
     async def variation(self, hash, choice):
         """Генерация изображения, похожего на choice"""
+        
+        if await self.is_limit_reached():
+            return None
+        
         headers = await self.generate_headers()
         data = {
             "hash": hash,
@@ -105,10 +122,11 @@ class MidJourney:
             response = await client.post(f"{self.API_URL}variation", headers=headers, json=data)
         
         if response.status_code == 200:
+            await Orm.decrement_midjourney_generations(self.telegram_id)
             data = response.json()
             task_hash = data['hash']
             return task_hash
-        print(response.json())
+        
         return None
     
     async def upscale(self, hash, choice):
@@ -128,10 +146,15 @@ class MidJourney:
             data = response.json()
             task_hash = data['hash']
             return task_hash
-        print(response.json())
+
         return None
     
     async def reroll(self, hash):
+        """Перегенерация изображения"""
+        
+        if await self.is_limit_reached():
+            return None
+        
         headers = await self.generate_headers()
         data = {
             "hash": hash
@@ -141,6 +164,7 @@ class MidJourney:
             response = await client.post(f"{self.API_URL}reroll", headers=headers, json=data)
         
         if response.status_code == 200:
+            await Orm.decrement_midjourney_generations(self.telegram_id)
             data = response.json()
             task_hash = data['hash']
             return task_hash
@@ -149,6 +173,7 @@ class MidJourney:
     
     async def save_image(self, image_url):
         """Сохранение изображения по URL"""
+        
         max_id = await Orm.get_current_image_id()
         filename = f"images/image{max_id}.png"
         

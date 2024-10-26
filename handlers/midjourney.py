@@ -1,3 +1,4 @@
+from operator import call
 import stat
 from aiogram import F
 from aiogram.filters.command import Command
@@ -17,7 +18,7 @@ from .markups import *
 @dp.message(Command('mj'))
 async def process_midjourney_prompt(message: Message):
     prompt = message.text.split(' ', 1)[1]
-    midjourney = MidJourney()
+    midjourney = MidJourney(message.from_user.id)
     hash = await midjourney.generate_image(prompt)
     if hash:
         await Orm.add_midjourney_task(
@@ -29,13 +30,15 @@ async def process_midjourney_prompt(message: Message):
         await prompt_taken_message(message)
         await process_midjourney_progress(message, hash, first=True)
     else:
-        await message.answer("Ошибка создания задачи")
+        await message.answer(
+            text=exception_on_midjourney_text,
+        )
         
 async def prompt_taken_message(message: Message):
     await message.answer(prompt_taken_message_text)
         
 async def process_midjourney_progress(message: Message, hash: str, method='imagine', first=False):  
-    midjourney = MidJourney()
+    midjourney = MidJourney(message.from_user.id)
     status, progress, url = await midjourney.check_image_url(hash)
     
     await Orm.update_midjourney_task(
@@ -65,14 +68,14 @@ async def process_midjourney_progress(message: Message, hash: str, method='imagi
         
 @dp.callback_query(lambda callback: callback.data.startswith("variation:"))
 async def variation_callback(callback: CallbackQuery):
-    await prompt_taken_message(callback.message)
         
     _, hash, choice = callback.data.split(":")
     
-    midjourney = MidJourney()
+    midjourney = MidJourney(callback.from_user.id)
     hash = await midjourney.variation(hash, choice)
     
     if hash:
+        await prompt_taken_message(callback.message)
         await Orm.add_midjourney_task(
             telegram_id=callback.from_user.id,
             task_hash=hash,
@@ -80,14 +83,14 @@ async def variation_callback(callback: CallbackQuery):
         )
         await process_midjourney_progress(callback.message, hash, 'variation', first=True)
     else:
-        await callback.message.answer("Ошибка создания задачи")
+        await callback.message.answer(exception_on_midjourney_text)
         
 @dp.callback_query(lambda callback: callback.data.startswith("upscale:"))
 async def upscale_callback(callback: CallbackQuery):
     
     _, hash, choice = callback.data.split(":")
     
-    midjourney = MidJourney()
+    midjourney = MidJourney(callback.from_user.id)
     hash = await midjourney.upscale(hash, choice)
     
     if hash:
@@ -98,18 +101,18 @@ async def upscale_callback(callback: CallbackQuery):
         )
         await process_midjourney_progress(callback.message, hash, 'upscale', first=True)
     else:
-        await callback.message.answer("Ошибка создания задачи")
+        await callback.message.answer(exception_on_midjourney_text)
         
 @dp.callback_query(lambda callback: callback.data.startswith("reroll:"))
 async def reroll_callback(callback: CallbackQuery):
-    await prompt_taken_message(callback.message)
     
     _, hash = callback.data.split(":")
     
-    midjourney = MidJourney()
+    midjourney = MidJourney(callback.from_user.id)
     hash = await midjourney.reroll(hash)
     
     if hash:
+        await prompt_taken_message(callback.message)
         await Orm.add_midjourney_task(
             telegram_id=callback.from_user.id,
             task_hash=hash,
@@ -117,5 +120,5 @@ async def reroll_callback(callback: CallbackQuery):
         )
         await process_midjourney_progress(callback.message, hash, 'reroll', first=True)
     else:
-        await callback.message.answer("Ошибка создания задачи")
+        await callback.message.answer(exception_on_midjourney_text)
         

@@ -14,7 +14,7 @@ from utils.openai_api import OpenAI_API
 from .markups import *
 
 
-@dp.message(Command("img"))
+@dp.message(Command("dalle"))
 async def image_command(message: Message, state: FSMContext):
     await state.clear()
     

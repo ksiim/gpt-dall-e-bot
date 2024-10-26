@@ -1,4 +1,6 @@
 import asyncio
+from itertools import count
+from typing import Coroutine
 
 from models.databases import Session, AsyncSession
 from models.dbs.models import *
@@ -16,6 +18,75 @@ async def run_async_before_insert_listener(target):
         await Orm.set_default_rate(session, target)
 
 class Orm:
+    
+    @staticmethod
+    async def decrement_midjourney_generations(telegram_id):
+        async with Session() as session:
+            query = (
+                update(User)
+                .where(User.telegram_id == telegram_id)
+                .values(remaining_midjourney_generations=User.remaining_midjourney_generations - 1)
+            )
+            await session.execute(query)
+            await session.commit()
+    
+    @staticmethod
+    async def get_midjourney_package_by_id(package_id):
+        async with Session() as session:
+            query = select(MidJourneyPrices).where(MidJourneyPrices.id == package_id)
+            package = (await session.execute(query)).unique().scalar_one_or_none()
+            return package
+    
+    @staticmethod
+    async def get_midjourney_counts_and_prices():
+        async with Session() as session:
+            query = select(MidJourneyPrices)
+            result = (await session.execute(query)).unique().scalars().all()
+            return result
+    
+    @staticmethod
+    async def add_midjourney_generations(telegram_id, count_of_generations):
+        async with Session() as session:
+            query = (
+                update(User)
+                .where(User.telegram_id == telegram_id)
+                .values(remaining_midjourney_generations=User.remaining_midjourney_generations + count_of_generations)
+            )
+            await session.execute(query)
+            await session.commit()
+    
+    @staticmethod
+    async def create_midjourney_prices():
+        async with Session() as session:
+            price_1 = MidJourneyPrices(
+                price=299,
+                count_of_generations=50
+            )
+            price_2 = MidJourneyPrices(
+                price=549,
+                count_of_generations=100
+            )
+            price_3 = MidJourneyPrices(
+                price=899,
+                count_of_generations=200
+            )
+            price_4 = MidJourneyPrices(
+                price=1999,
+                count_of_generations=500
+            )
+            session.add(price_1)
+            session.add(price_2)
+            session.add(price_3)
+            session.add(price_4)
+            await session.commit()
+    
+    @staticmethod
+    async def fill_midjourney_prices():
+        async with Session() as session:
+            query = select(MidJourneyPrices)
+            prices = (await session.execute(query)).unique().scalars().all()
+            if not prices:
+                await Orm.create_midjourney_prices()
     
     @staticmethod
     async def get_current_image_id():
