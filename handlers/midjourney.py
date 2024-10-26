@@ -48,7 +48,7 @@ async def process_midjourney_progress(message: Message, hash: str, method='imagi
         result=url
     )
     
-    if status == "progress" or status == "waiting" or status == "sent":
+    if status in ["progress", "waiting", "sent", "queued"]:
         await asyncio.sleep(10)
         await process_midjourney_progress(message, hash, method)
         
