@@ -5,13 +5,11 @@ from aiogram.types import (
     Message, CallbackQuery, FSInputFile
 )
 from aiogram.fsm.context import FSMContext
-from aiogram.enums.chat_action import ChatAction
 
 from bot import dp, bot
 
 from models.dbs.orm import Orm
 
-from utils import midjourney
 from utils.midjourney import MidJourney
 from .markups import *
 
@@ -48,7 +46,7 @@ async def process_midjourney_progress(message: Message, hash: str, method='imagi
     )
     
     if status == "progress" or status == "waiting" or status == "sent":
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         await process_midjourney_progress(message, hash, method)
         
     elif status == "done":

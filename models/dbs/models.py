@@ -20,6 +20,7 @@ class User(Base):
     last_activity_time: Mapped[datetime.datetime] = mapped_column(nullable=True, default=datetime.datetime.now)
     registration_time: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now, nullable=True)
     subscription_end_time: Mapped[datetime.datetime] = mapped_column(nullable=True)
+    remaining_midjourney_generations: Mapped[int] = mapped_column(default=0)
 
     rate: Mapped['Rate'] = relationship('Rate', back_populates='users', lazy="joined")
     count_of_requests: Mapped[List['CountOfRequests']] = relationship('CountOfRequests', back_populates='user')
