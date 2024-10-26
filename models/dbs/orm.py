@@ -18,6 +18,12 @@ async def run_async_before_insert_listener(target):
 class Orm:
     
     @staticmethod
+    async def get_current_image_id():
+        async with Session() as session:
+            query = select(func.max(MidJourneyPrompts.id))
+            return (await session.execute(query)).scalar()
+    
+    @staticmethod
     async def update_midjourney_task(task_hash, status, result, progress):
         async with Session() as session:
             query = (
@@ -33,9 +39,10 @@ class Orm:
             await session.commit()
     
     @staticmethod
-    async def add_midjourney_task(user_id, task_hash, prompt):
+    async def add_midjourney_task(telegram_id, task_hash, prompt=None, type_=None):
+        user_id = (await Orm.get_user_by_telegram_id(telegram_id)).id
         async with Session() as session:
-            midjourney_task = MidJourneyPrompts(user_id=user_id, hash=task_hash, prompt=prompt)
+            midjourney_task = MidJourneyPrompts(user_id=user_id, hash=task_hash, prompt=prompt, type_=type_)
             session.add(midjourney_task)
             await session.commit()
             await session.refresh(midjourney_task)

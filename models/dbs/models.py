@@ -82,6 +82,7 @@ class MidJourneyPrompts(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     prompt: Mapped[str] = mapped_column(nullable=True)
+    type_: Mapped[str] = mapped_column(nullable=True)
     hash: Mapped[str] = mapped_column(nullable=True)
     status: Mapped[str] = mapped_column(nullable=True)
     progress: Mapped[int] = mapped_column(nullable=True)
