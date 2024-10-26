@@ -149,6 +149,7 @@ async def process_successful_midjourney_payment(callback: CallbackQuery, payment
     return answer
 
 async def process_successful_rate_payment(callback, payment):
+    await callback.message.delete()
     answer = await callback.message.answer("Оплата прошла успешно")
     user = await Orm.get_user_by_telegram_id(callback.from_user.id)
     period = int(payment.metadata["period"])
