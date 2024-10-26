@@ -1,7 +1,7 @@
 import os
 from typing import Tuple
 from config import ACCOUNT_HASH, USERAPI_UI_API_KEY, USERAPI_UI_URL, OPENAI_API_KEY
-from httpx import AsyncClient
+from httpx import AsyncClient, Timeout
 import aiofiles
 
 
@@ -55,7 +55,7 @@ class MidJourney:
         
         headers = await self.generate_headers()
         data = await self.generate_data(prompt)
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.post(f"{self.API_URL}imagine", headers=headers, json=data)
 
         if response.status_code == 200:
@@ -89,7 +89,7 @@ class MidJourney:
         
         status_url = f"{self.API_URL}status?hash={task_hash}"
         
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.get(status_url, headers=headers)
         
         if response.status_code == 200:
@@ -118,7 +118,7 @@ class MidJourney:
             "webhook_type": "progress"
         }
         
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.post(f"{self.API_URL}variation", headers=headers, json=data)
         
         if response.status_code == 200:
@@ -139,7 +139,7 @@ class MidJourney:
             "webhook_type": "progress"
         }
         
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.post(f"{self.API_URL}upscale", headers=headers, json=data)
         
         if response.status_code == 200:
@@ -160,7 +160,7 @@ class MidJourney:
             "hash": hash
         }
         
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.post(f"{self.API_URL}reroll", headers=headers, json=data)
         
         if response.status_code == 200:
@@ -177,7 +177,7 @@ class MidJourney:
         max_id = await Orm.get_current_image_id()
         filename = f"images/image{max_id}.png"
         
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.get(image_url)
             async with aiofiles.open(filename, "wb") as file:
                 await file.write(response.content)
