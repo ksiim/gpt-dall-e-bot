@@ -86,7 +86,13 @@ async def get_period(callback: CallbackQuery):
     await callback.message.answer(
         text=f"Вы выбрали тариф {rate.name} на {period} {await incline_by_period(period)}. Его цена {total_amount}₽",
     )
-    await card_callback(callback.from_user.id, rate, period, total_amount)
+    await card_callback(
+        type_='rate',
+        telegram_id=callback.from_user.id,
+        rate=rate,
+        period=period,
+        total_amount=total_amount
+    )
 
 async def card_callback(type_='rate', telegram_id=None, rate=None, period=None, total_amount=None, count_of_generations=None, package_id=None):
     yoopay = YooPay()
