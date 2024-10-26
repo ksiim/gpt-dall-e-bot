@@ -147,8 +147,10 @@ async def process_successful_rate_payment(callback, payment):
     user = await Orm.get_user_by_telegram_id(callback.from_user.id)
     period = int(payment.metadata["period"])
     rate_name = payment.metadata["rate_name"]
-    rate_id = (await Orm.get_rate_by_name(rate_name)).id
+    rate = await Orm.get_rate_by_name(rate_name)
+    rate_id = rate.id
     await Orm.update_subscription(user, period, rate_id)
+    await Orm.add_midjourney_generations(user.telegram_id, rate.midjourney_generations * period)
 
     await callback.message.answer("Поздравляю! Подписка успешно активирована, проверьте в разделе /profile")
 

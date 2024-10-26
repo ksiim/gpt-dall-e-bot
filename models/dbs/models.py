@@ -39,6 +39,7 @@ class Rate(Base):
     models_limits: Mapped[List["ModelLimit"]] = relationship('ModelLimit', back_populates='rate', lazy="joined")
     price: Mapped[int] = mapped_column(nullable=True)
     users: Mapped[List["User"]] = relationship('User', back_populates='rate')
+    midjourney_generations: Mapped[int] = mapped_column(nullable=True)
     price_3: Mapped[int] = mapped_column(nullable=True)
     price_6: Mapped[int] = mapped_column(nullable=True)
     price_12: Mapped[int] = mapped_column(nullable=True)
