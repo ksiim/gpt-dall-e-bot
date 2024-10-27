@@ -174,10 +174,18 @@ class Orm:
                 query = update(User).where(User.id == user.id).values(rate_id=1, subscription_end_time=None)
                 await session.execute(query)
             await session.commit()
+            
+    @staticmethod
+    async def clear_requests(user_id):
+        async with Session() as session:
+            query = delete(CountOfRequests).where(CountOfRequests.user_id == user_id)
+            await session.execute(query)
+            await session.commit()
     
     @staticmethod
     async def update_subscription(user: User, month_period: int, rate_id: int):
         async with Session() as session:
+            await Orm.clear_requests(user.id)
             user.subscription_end_time = datetime.datetime.now() + datetime.timedelta(days=30 * month_period)
             user.rate_id = rate_id
             session.add(user)

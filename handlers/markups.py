@@ -14,7 +14,7 @@ from .callbacks import *
 
 waiting_text = "Ваш запрос принят, ожидайте ответа..."
 
-exception_on_midjourney_text = "Ошибка создания задачи, возможно вы превысили лимит генераций, /premium для покупки"
+exception_on_midjourney_text = "Чтобы отправлять запросы к Midjorney нужно приобрести пакет или подписку по команде /premium"
 
 async def generate_rates_info_text():
     free_rate = await Orm.get_rate_by_name("free")
@@ -42,18 +42,19 @@ async def generate_rates_info_text():
 
 Стоимость: {plus_rate_price} р.
 
-🔥Pro X2 | МЕСЯЦ
-✌️ Увеличивает лимит в 2 раза:
-✅ {pro_rate_gpt_4o} запросов GPT-4o mini ежедневно
-✅ {pro_rate_gpt_4o_mini} запроосв GPT-4o
+🔥Pro | МЕСЯЦ
+✨Больше лимитов:
+✅ {pro_rate_gpt_4o_mini} запросов GPT-4o mini ежедневно
+✅ {pro_rate_gpt_4o} запросов GPT-4o
 🌅 {pro_rate_dall_e} картинок Dall-E
+
 Стоимость: {pro_rate_price} р.
 
-Midjorney - ПАКЕТ
-
+MIDJORNEY - ПАКЕТ
 🌄 от 50 до 500 генераций
 🌄 Midjorney 6.1 /mj
 ✅ промпты на русском языке
+
 Стоимость: от 299 р.
 
 💬 По вопросам оплаты: @GPT_helpAi
@@ -173,14 +174,15 @@ async def incline_by_limit(limit):
         return "запросов"
     
 async def generate_limits_text(user: User):
-    chat_model_enum_value = user.chat_model.value
-    chat_model_enum_name = ChatModelEnum(chat_model_enum_value).name
-    limit_chat = user.rate.daily_limit_dict[chat_model_enum_name]
+    rate = user.rate
+    limit_gpt_4o = rate.daily_limit_dict[ChatModelEnum.GPT_4O.name]
+    limit_gpt_4o_mini = rate.daily_limit_dict[ChatModelEnum.GPT_4O_MINI.name]
     image_model_enum_value = user.image_model.value
     image_model_enum_name = ImageModelEnum(image_model_enum_value).name
-    limit_image = user.rate.daily_limit_dict[image_model_enum_name]
+    limit_image = rate.daily_limit_dict[image_model_enum_name]
     remaining_midjourney_generations = user.remaining_midjourney_generations
-    return f"""✍️{chat_model_enum_value} - {limit_chat - await get_count_of_requests(chat_model_enum_name, user)}/{limit_chat}
+    return f"""✍️{ChatModelEnum.GPT_4O.value} - {limit_gpt_4o - await get_count_of_requests(ChatModelEnum.GPT_4O.name, user)}/{limit_gpt_4o}
+✍️{ChatModelEnum.GPT_4O_MINI.value} - {limit_gpt_4o_mini - await get_count_of_requests(ChatModelEnum.GPT_4O_MINI.name, user)}/{limit_gpt_4o_mini}
 🖼{image_model_enum_value} - {limit_image - await get_count_of_requests(image_model_enum_name, user)}/{limit_image}
 🖼Midjourney - {remaining_midjourney_generations} шт.
 """
@@ -336,6 +338,8 @@ close_markup = InlineKeyboardMarkup(
     ]
 )
 
+buy_premium_text = "Чтобы отправлять запросы к ChatGPT-4o нужно оформить подписку Plus или PRO по команде /premium "
+
 async def generate_model_markup(user: User):
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -352,7 +356,7 @@ buy_premium_markup = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="Обновить тарифный план",
+                text="🔥Получить премиум",
                 callback_data="change_rate"
             )
         ]

@@ -19,7 +19,13 @@ async def image_command(message: Message, state: FSMContext):
     await state.clear()
     
     user = await Orm.get_user_by_telegram_id(message.from_user.id)
-    prompt = message.text.split(" ", 1)[1]
+    try:
+        prompt = message.text.split(" ", 1)[1]
+    except Exception:
+        await message.answer(
+            text="Напишите /dalle и описание изображения"
+        )
+        return
     
     updating_message = await message.answer(
         text=waiting_text

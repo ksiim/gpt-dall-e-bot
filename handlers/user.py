@@ -50,7 +50,7 @@ async def profile_message_handler(message: Message, state: FSMContext):
 
     await message.answer(
         text=await generate_profile_text(user),
-        reply_markup=close_markup
+        reply_markup=buy_premium_markup
     )
     
 @dp.message(Command("model"))
@@ -62,6 +62,10 @@ async def change_model_command(message: Message, state: FSMContext):
         text=await generate_current_models_text(user),
         reply_markup=await generate_model_markup(user)
     )
+    
+@dp.callback_query(F.data == "change_rate")
+async def change_rate_handler(callback: CallbackQuery, state: FSMContext):
+    await premium_command(callback.message, state)
     
 @dp.message(Command("premium"))
 async def premium_command(message: Message, state: FSMContext):
@@ -76,6 +80,11 @@ async def premium_command(message: Message, state: FSMContext):
 async def change_chat_model(callback: CallbackQuery):
     model = callback.data.split(":")[-1]
     user = await Orm.get_user_by_telegram_id(callback.from_user.id)
+    new_model_limit = user.rate.daily_limit_dict[model]
+    if new_model_limit <= 0:
+        return await callback.message.answer(
+            text=buy_premium_text
+        )
     user = await Orm.update_chat_model(user, model)
     await callback.message.edit_text(
         text=await generate_current_models_text(user),

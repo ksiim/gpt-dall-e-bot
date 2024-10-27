@@ -17,7 +17,14 @@ from .markups import *
 
 @dp.message(Command('mj'))
 async def process_midjourney_prompt(message: Message):
-    prompt = message.text.split(' ', 1)[1]
+    try:
+        prompt = message.text.split(" ", 1)[1]
+    except Exception:
+        await message.answer(
+            text="Напишите /mj и описание изображения"
+        )
+        return
+    
     midjourney = MidJourney(message.from_user.id)
     hash = await midjourney.generate_image(prompt)
     if hash:
