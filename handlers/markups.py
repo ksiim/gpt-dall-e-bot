@@ -297,7 +297,7 @@ async def generate_period_keyboard(rate_id: int):
     )
 
 async def generate_start_text(message):
-    return f"""Рад тебя приветствовать, {message.from_user.full_name}! Я Telegram бот ChatGPT + Dall-E
+    return f"""Рад тебя приветствовать, {message.from_user.full_name}! Я Telegram бот ChatGPT + MidJourney
 
 Можешь задавать мне любые вопросы, просто напиши 😉
 
