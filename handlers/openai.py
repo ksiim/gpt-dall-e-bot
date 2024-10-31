@@ -77,6 +77,7 @@ async def audio_query(message: Message, state: FSMContext):
     transcription = await openai.get_transcription_from_audio(file_path)
 
     await send_transcription_response(message, updating_message, transcription)
+    os.remove(file_path)
 
 
 async def download_voice_message(message: Message):
