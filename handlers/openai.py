@@ -66,11 +66,6 @@ async def path_to_bytesio(file_path):
 
 @dp.message(F.voice)
 async def audio_query(message: Message, state: FSMContext):
-    updating_message = await message.answer(
-        text=waiting_text
-    )
-    await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
-
     file_path = await download_voice_message(message)
 
     openai = OpenAI_API(user=await Orm.get_user_by_telegram_id(message.from_user.id))
@@ -78,7 +73,7 @@ async def audio_query(message: Message, state: FSMContext):
 
     os.remove(file_path)
 
-    await proccess_text_query(message, state)
+    await proccess_text_query(await Orm.get_user_by_telegram_id(message.from_user.id), message, transcription)
 
 async def download_voice_message(message: Message):
     audio_file_id = message.voice.file_id
@@ -92,9 +87,12 @@ async def download_voice_message(message: Message):
 
 
 @dp.message(F.text)
-async def proccess_text_query(message: Message, state: FSMContext):
+async def text_query_handler(message: Message, state: FSMContext):
     user = await Orm.get_user_by_telegram_id(message.from_user.id)
     query = message.text
+    await proccess_text_query(user, message, query)
+    
+async def proccess_text_query(user, message: Message, query):
 
     updating_message = await message.answer(
         text=waiting_text
