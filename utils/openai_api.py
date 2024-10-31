@@ -85,11 +85,8 @@ class OpenAI_API:
         return count_of_requests < rate_limit
 
     async def get_transcription_from_audio(self, file_name):
-        if await self.validate_request(self.chat_model.name):
-            transcription = await self.openai.audio.transcriptions.create(
-                model='whisper-1',
-                file=Path(file_name)
-            )
-            await Orm.update_count_of_requests(self.chat_model.name, self.user)
-            return transcription.text
-        return None
+        transcription = await self.openai.audio.transcriptions.create(
+            model='whisper-1',
+            file=Path(file_name)
+        )
+        return transcription.text
