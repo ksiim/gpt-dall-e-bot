@@ -23,7 +23,7 @@ async def describe_image(message: Message):
     file_path = f"images/{message.from_user.id}.jpg"
     image_save_location = os.path.join(os.getcwd(), file_path)
     downloaded_file = await bot.download(photo.file_id, image_save_location)
-    file_url = f"http://193.23.118.126:8000/{file_path}"
+    file_url = f"http://193.23.118.126:8000/image/{file_path}"
     
     midjourney = MidJourney(message.from_user.id)
     hash = await midjourney.describe_image(file_url)
