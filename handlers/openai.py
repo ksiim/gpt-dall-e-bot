@@ -76,9 +76,9 @@ async def audio_query(message: Message, state: FSMContext):
     openai = OpenAI_API(user=await Orm.get_user_by_telegram_id(message.from_user.id))
     transcription = await openai.get_transcription_from_audio(file_path)
 
-    await send_transcription_response(message, updating_message, transcription)
     os.remove(file_path)
 
+    await proccess_text_query(message, state)
 
 async def download_voice_message(message: Message):
     audio_file_id = message.voice.file_id
@@ -89,20 +89,6 @@ async def download_voice_message(message: Message):
 
     await bot.download(audio_file_id, file_name)
     return file_path
-
-
-async def send_transcription_response(message: Message, updating_message: Message, transcription):
-    if transcription:
-        await updating_message.delete()
-        await message.answer(
-            text=transcription,
-            parse_mode=None
-        )
-    else:
-        await updating_message.edit_text(
-            text="Превышен лимит запросов",
-            reply_markup=buy_premium_markup
-        )
 
 
 @dp.message(F.text)
