@@ -20,6 +20,20 @@ async def run_async_before_insert_listener(target):
 class Orm:
     
     @staticmethod
+    async def get_last_month_count():
+        async with Session() as session:
+            last_month = datetime.datetime.now() - datetime.timedelta(days=30)
+            query = select(func.count(User.id)).where(User.registration_time >= last_month)
+            return (await session.execute(query)).scalar()
+    
+    @staticmethod
+    async def get_last_week_count():
+        async with Session() as session:
+            last_week = datetime.datetime.now() - datetime.timedelta(days=7)
+            query = select(func.count(User.id)).where(User.registration_time >= last_week)
+            return (await session.execute(query)).scalar()
+    
+    @staticmethod
     async def decrement_midjourney_generations(telegram_id):
         async with Session() as session:
             query = (

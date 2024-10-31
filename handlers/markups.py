@@ -210,11 +210,15 @@ ChatGPT-4o mini:
     """
 
 async def generate_statistic_text():
-    yesterday, today, all_users_count, online_count = await asyncio.gather(
+    (yesterday, today, all_users_count,
+    online_count, last_week_count,
+    last_month_count) = await asyncio.gather(
         Orm.get_yesterday_count(),
         Orm.get_today_count(),
         Orm.get_all_users_count(),
         Orm.get_online_count(),
+        Orm.get_last_week_count(),
+        Orm.get_last_month_count()
     )
 
     try:
