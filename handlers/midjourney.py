@@ -34,11 +34,11 @@ async def describe_image(message: Message):
                 task_hash=hash, prompt=None, type_='describe'
                 ),
             prompt_taken_message(message),
-            process_midjourney_describe_progress(message, hash, first=True, method='describe')
+            process_midjourney_describe_progress(message, hash, first=True, method='describe', file_path=file_path)
         )
     
     
-async def process_midjourney_describe_progress(message: Message, hash: str, method='describe', first=False):
+async def process_midjourney_describe_progress(message: Message, hash: str, method='describe', first=False, file_path=None):
     midjourney = MidJourney(message.from_user.id)
     status, progress, description = await midjourney.check_image_description(hash)
     
@@ -52,7 +52,7 @@ async def process_midjourney_describe_progress(message: Message, hash: str, meth
     
     if status in ["progress", "waiting", "sent", "queued"]:
         await asyncio.sleep(10)
-        await process_midjourney_describe_progress(message, hash, method)
+        await process_midjourney_describe_progress(message, hash, method, file_path=file_path)
         
     elif status == "done":
         await message.answer(description)
@@ -62,6 +62,7 @@ async def process_midjourney_describe_progress(message: Message, hash: str, meth
             progress=100,
             result=description
         )
+        await midjourney.delete_image(description)
 
 @dp.message(Command('mj'))
 async def process_midjourney_prompt(message: Message):
