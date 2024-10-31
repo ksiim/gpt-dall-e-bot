@@ -54,7 +54,7 @@ class MidJourney:
             return None
         
         headers = await self.generate_headers()
-        data = await self.generate_data(prompt)
+        data = await self.generate_data(prompt=prompt)
         async with AsyncClient(timeout=Timeout(30.0)) as client:
             response = await client.post(f"{self.API_URL}imagine", headers=headers, json=data)
 
@@ -64,6 +64,38 @@ class MidJourney:
             hash = data['hash']
             return hash
         return None
+    
+    async def describe_image(self, image_url):
+        """Описание изображения по URL"""
+        if await self.is_limit_reached():
+            return None
+        
+        headers = await self.generate_headers()
+        data = await self.generate_data(url=image_url)
+        
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
+            response = await client.post(f"{self.API_URL}describe", headers=headers, json=data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            hash = data['hash']
+            return hash
+        return None
+    
+    async def check_image_description(self, task_hash) -> Tuple[str, int, str]:
+        """Проверка статуса задачи и получение описания изображения по хэшу задачи"""
+        response = await self.get_status_by_hash(task_hash)
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(data)
+            status = data.get('status')
+            progress = await try_to_int(data.get('progress'))
+            description = data.get('result')[0] if data.get('result') else None
+            
+            return status, progress, description
+        else:
+            return None, None, None
 
     async def generate_headers(self):
         headers = {
@@ -72,25 +104,20 @@ class MidJourney:
         }
         return headers
 
-    async def generate_data(self, prompt):
+    async def generate_data(self, **kwargs):
         data = {
-            "prompt": prompt,
             "webhook_url": self.WEBHOOK_URL,
             "webhook_type": "progress",
             "is_disable_prefilter": False
         }
-        
+        for key, value in kwargs.items():
+            data[key] = value
         return data
 
 
     async def check_image_url(self, task_hash) -> Tuple[str, int, str]:
         """Проверка статуса задачи и получение URL изображения по хэшу задачи"""
-        headers = await self.generate_headers()
-        
-        status_url = f"{self.API_URL}status?hash={task_hash}"
-        
-        async with AsyncClient(timeout=Timeout(30.0)) as client:
-            response = await client.get(status_url, headers=headers)
+        response = await self.get_status_by_hash(task_hash)
         
         if response.status_code == 200:
             data = response.json()
@@ -103,6 +130,15 @@ class MidJourney:
             return status, progress, image_url
         else:
             return None, None, None
+
+    async def get_status_by_hash(self, task_hash):
+        headers = await self.generate_headers()
+        
+        status_url = f"{self.API_URL}status?hash={task_hash}"
+        
+        async with AsyncClient(timeout=Timeout(30.0)) as client:
+            response = await client.get(status_url, headers=headers)
+        return response
         
     async def variation(self, hash, choice):
         """Генерация изображения, похожего на choice"""

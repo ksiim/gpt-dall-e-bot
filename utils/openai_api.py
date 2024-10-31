@@ -1,3 +1,4 @@
+from pathlib import Path
 from openai import AsyncOpenAI
 
 from models.dbs.enums import *
@@ -83,13 +84,12 @@ class OpenAI_API:
         count_of_requests = self.user.count_of_requests_dict[model]
         return count_of_requests < rate_limit
 
-    async def get_transcription_from_audio(self):
-        file_path = await self.get_transcription_file_path()
-        transcription = await self.openai.audio.transcriptions.create(
-            model='whisper-1',
-            file=file_path
-        )
-        return transcription.text
-
-    async def get_transcription_file_path(self):
-        return
+    async def get_transcription_from_audio(self, file_name):
+        if await self.validate_request(self.chat_model.name):
+            transcription = await self.openai.audio.transcriptions.create(
+                model='whisper-1',
+                file=Path(file_name)
+            )
+            await Orm.update_count_of_requests(self.chat_model.name, self.user)
+            return transcription.text
+        return None
