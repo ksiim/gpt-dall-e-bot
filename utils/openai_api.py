@@ -20,9 +20,9 @@ class OpenAI_API:
 
     Remember, your goal is to be as helpful and efficient as possible. If you are unsure about a query, provide the best possible answer based on the information available.
     """
-    
+
     def __init__(self, user: User, system_message=SYSTEM_MESSAGE):
-        self.user = user    
+        self.user = user
         self.chat_model = user.chat_model
         self.image_model = user.image_model
         self.openai = AsyncOpenAI()
@@ -34,24 +34,24 @@ class OpenAI_API:
     async def chatgpt(self, query):
         if await self.validate_request(self.chat_model.name):
             messages = await self.get_chat_messages(query)
-            
+
             response = await self.openai.chat.completions.create(
                 model=self.chat_model.value.lower(),
                 messages=messages,
                 max_tokens=4096
             )
-            
-            await Orm.add_context_message(self.user, query, "user")            
-            await Orm.add_context_message(self.user, response.choices[0].message.content, "assistant")  
-            
+
+            await Orm.add_context_message(self.user, query, "user")
+            await Orm.add_context_message(self.user, response.choices[0].message.content, "assistant")
+
             await Orm.update_count_of_requests(self.chat_model.name, self.user)
-            
+
             answer = response.choices[0].message.content
             answers = await self.split_text(answer)
             return answers
 
         return None
-    
+
     async def split_text(self, text, length=4095):
         parts = [text[i:i+length] for i in range(0, len(text), length)]
         return parts
@@ -69,12 +69,12 @@ class OpenAI_API:
                 model=self.image_model.value.lower(),
                 prompt=query
             )
-            
+
             await Orm.update_count_of_requests(self.image_model.name, self.user)
-            
+
             return response.data[0].url
         return None
-    
+
     async def validate_request(self, model: str):
         rate_limit = self.user.rate.daily_limit_dict[model]
         if self.user.count_of_requests_dict.get(model) == None:
@@ -82,3 +82,14 @@ class OpenAI_API:
             self.user = await Orm.get_user_by_telegram_id(self.user.telegram_id)
         count_of_requests = self.user.count_of_requests_dict[model]
         return count_of_requests < rate_limit
+
+    async def get_transcription_from_audio(self):
+        file_path = await self.get_transcription_file_path()
+        transcription = await self.openai.audio.transcriptions.create(
+            model='whisper-1',
+            file=file_path
+        )
+        return transcription.text
+
+    async def get_transcription_file_path(self):
+        return

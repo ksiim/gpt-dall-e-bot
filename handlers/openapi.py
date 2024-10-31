@@ -52,6 +52,13 @@ async def image_command(message: Message, state: FSMContext):
         )
     await state.clear()
     
+@dp.message(F.audio)
+async def audio_query(message: Message, state: FSMContext):
+    audio_file_id = message.audio.file_id
+    
+    voice_file = await bot.download(audio_file_id)
+    audio_file = voice_file.file_path
+    
 @dp.message(F.text)
 async def proccess_text_query(message: Message, state: FSMContext):
     user = await Orm.get_user_by_telegram_id(message.from_user.id)

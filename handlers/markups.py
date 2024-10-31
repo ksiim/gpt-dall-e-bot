@@ -1,7 +1,11 @@
 import asyncio
 from sys import exception
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+from aiogram.types import (
+    InlineKeyboardButton, InlineKeyboardMarkup,
+    ReplyKeyboardMarkup, KeyboardButton, WebAppInfo,
+    Message
+)
 
 from bot import bot
 
@@ -29,7 +33,7 @@ async def generate_rates_info_text():
     pro_rate_dall_e = str(pro_rate.daily_limit_dict[ImageModelEnum.DALL_E_3.name])
     pro_rate_price = str(pro_rate.price)
     return f"""
-Доступ к лучшим AI-сервисам прямо в Telegram:
+Доступ к лучшим нейросетям прямо в Telegram:
 
 Бесплатно | ЕЖЕНЕДЕЛЬНО
 ✔️ {free_rate_gpt_4o_mini} текстовых запросов
@@ -39,6 +43,7 @@ async def generate_rates_info_text():
 ✅ PLUS | МЕСЯЦ
 ✅ {plus_rate_gpt_4o_mini} запросов GPT-4o mini ежедневно
 🌅 {plus_rate_dall_e} картинок Dall-E
+🌄 10 изображений Midjorney 6.1 /mj
 
 Стоимость: {plus_rate_price} р.
 
@@ -47,6 +52,7 @@ async def generate_rates_info_text():
 ✅ {pro_rate_gpt_4o_mini} запросов GPT-4o mini ежедневно
 ✅ {pro_rate_gpt_4o} запросов GPT-4o
 🌅 {pro_rate_dall_e} картинок Dall-E
+🌄 20 изображений Midjorney 6.1 /mj
 
 Стоимость: {pro_rate_price} р.
 
@@ -296,7 +302,7 @@ async def generate_period_keyboard(rate_id: int):
         ]
     )
 
-async def generate_start_text(message):
+async def generate_start_text(message: Message):
     return f"""Рад тебя приветствовать, {message.from_user.full_name}! Я Telegram бот ChatGPT + MidJourney
 
 Можешь задавать мне любые вопросы, просто напиши 😉
@@ -304,7 +310,7 @@ async def generate_start_text(message):
 Узнать все команды /help"""
 
 help_text = """
-Этот бот открывает вам доступ к продуктам OpenAI и другим нейросетям, таким как ChatGPT, Midjourney и Dall-E 3, для создания текста и изображений.
+Этот бот открывает вам доступ к продуктам OpenAI и другим нейросетям, таким как ChatGPT и Dall-E 3, для создания текста и изображений.
 
 Чатбот умеет:
 1. Писать и редактировать тексты
@@ -316,8 +322,6 @@ help_text = """
 
 ✍️ Для получения текстового ответа просто напишите Ваш вопрос в чат
 
-🌅 Для создания изображения Midjorney начните сообщение с /mj и добавьте описание
-
 Для создания изображения DALL-E 3 начните сообщение с /dalle
 
 🔄 Чтобы очистить контекст диалога, воспользуйтесь командой /reset
@@ -325,10 +329,8 @@ help_text = """
 Команды
 /start - Что умеет чат-бот
 /profile - профиль пользователя
-/premium- получить подписку
 /reset - сброс контекста
 /model - выбрать нейросеть
-/mj - изображение Midjorney
 /dalle - изображение Dall-e
 /help - помощь
 """
