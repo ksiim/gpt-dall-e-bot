@@ -349,6 +349,7 @@ close_markup = InlineKeyboardMarkup(
     ]
 )
 
+describe_image_rate_text = 'Чтобы получить описание изображения, нужно оформить подписку Plus или PRO по команде /premium'
 voice_rate_text = 'Чтобы нейросеть распознавала голосовые сообщения, нужно оформить подписку Plus или PRO по команде /premium'
 buy_premium_text = "Чтобы отправлять запросы к ChatGPT-4o нужно оформить подписку Plus или PRO по команде /premium"
 
