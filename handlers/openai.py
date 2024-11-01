@@ -26,7 +26,7 @@ async def describe_image(message: Message):
             reply_markup=buy_premium_markup
         )
     
-    image_url = await download_photo_and_get_image_url(message)
+    image_url, file_path = await download_photo_and_get_image_url(message)
     
     
     updating_message = await message.answer(
@@ -41,6 +41,7 @@ async def describe_image(message: Message):
     
     if description:
         await message.answer(description)
+        os.remove(file_path)
     else:
         await message.answer(
             text="Превышен лимит запросов",
@@ -53,7 +54,7 @@ async def download_photo_and_get_image_url(message):
     image_save_location = os.path.join(os.getcwd(), file_path)
     await bot.download(photo.file_id, image_save_location)
     file_url = f"http://193.23.118.126:8000/image/{file_path}"
-    return file_url
+    return (file_url, file_path)
 
 @dp.message(Command("dalle"))
 async def image_command(message: Message, state: FSMContext):
