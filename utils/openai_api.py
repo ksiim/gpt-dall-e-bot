@@ -90,3 +90,29 @@ class OpenAI_API:
             file=Path(file_name)
         )
         return transcription.text
+    
+    async def desribe_image(self, image_url):
+        if await self.validate_request(self.chat_model.name):
+            response = await self.openai.chat.completions.create(
+                model=self.chat_model.value.lower(),
+                messages=[
+                    {
+                        'role': 'user',
+                        'content': [
+                            {
+                                'type': 'text',
+                                'text': 'Опиши что изображено на картинке'
+                            },
+                            {
+                                'type': 'image_url',
+                                'image_url': {
+                                    'url': image_url
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=300
+            )
+            return response.choices[0].message.content
+        return None

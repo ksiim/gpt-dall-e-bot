@@ -17,6 +17,35 @@ from utils.openai_api import OpenAI_API
 from .markups import *
 
 
+@dp.message(F.photo)
+async def describe_image(message: Message):
+    photo = message.photo[-1]
+    
+    file_path = f"images/{message.from_user.id}.jpg"
+    image_save_location = os.path.join(os.getcwd(), file_path)
+    await bot.download(photo.file_id, image_save_location)
+    file_url = f"http://193.23.118.126:8000/image/{file_path}"
+    
+    user = await Orm.get_user_by_telegram_id(message.from_user.id)
+    
+    updating_message = await message.answer(
+        text=waiting_text
+    )
+    await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
+    
+    openai = OpenAI_API(user=user)
+    description = await openai.desribe_image(file_url)
+    
+    await updating_message.delete()
+    
+    if description:
+        await message.answer(description)
+    else:
+        await message.answer(
+            text="Превышен лимит запросов",
+            reply_markup=buy_premium_markup
+        )
+
 @dp.message(Command("dalle"))
 async def image_command(message: Message, state: FSMContext):
     await state.clear()

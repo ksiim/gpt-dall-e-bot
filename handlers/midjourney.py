@@ -16,54 +16,6 @@ from utils.midjourney import MidJourney
 from .markups import *
 
 
-@dp.message(F.photo)
-async def describe_image(message: Message):
-    photo = message.photo[-1]
-    
-    file_path = f"images/{message.from_user.id}.jpg"
-    image_save_location = os.path.join(os.getcwd(), file_path)
-    downloaded_file = await bot.download(photo.file_id, image_save_location)
-    file_url = f"http://193.23.118.126:8000/image/{file_path}"
-    
-    midjourney = MidJourney(message.from_user.id)
-    hash = await midjourney.describe_image(file_url)
-    if hash:
-        await asyncio.gather(
-            Orm.add_midjourney_task(
-                telegram_id=message.from_user.id,
-                task_hash=hash, prompt=None, type_='describe'
-                ),
-            prompt_taken_message(message),
-            process_midjourney_describe_progress(message, hash, first=True, method='describe', file_path=file_path)
-        )
-    
-    
-async def process_midjourney_describe_progress(message: Message, hash: str, method='describe', first=False, file_path=None):
-    midjourney = MidJourney(message.from_user.id)
-    status, progress, description = await midjourney.check_image_description(hash)
-    
-    await Orm.update_midjourney_task(
-        task_hash=hash,
-        status=status,
-        progress=progress,
-        result=description
-    )
-    print(status, progress, description)
-    
-    if status in ["progress", "waiting", "sent", "queued"]:
-        await asyncio.sleep(10)
-        await process_midjourney_describe_progress(message, hash, method, file_path=file_path)
-        
-    elif status == "done":
-        await message.answer(description)
-        await Orm.update_midjourney_task(
-            task_hash=hash,
-            status='done',
-            progress=100,
-            result=description
-        )
-        await midjourney.delete_image(description)
-
 @dp.message(Command('mj'))
 async def process_midjourney_prompt(message: Message):
     try:
