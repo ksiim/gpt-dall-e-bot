@@ -66,9 +66,17 @@ async def path_to_bytesio(file_path):
 
 @dp.message(F.voice)
 async def audio_query(message: Message, state: FSMContext):
+    user = await Orm.get_user_by_telegram_id(message.from_user.id)
+    
+    if user.rate_id == 1:
+        return await message.answer(
+            text=voice_rate_text,
+            reply_markup=buy_premium_markup
+        )
+    
     file_path = await download_voice_message(message)
 
-    openai = OpenAI_API(user=await Orm.get_user_by_telegram_id(message.from_user.id))
+    openai = OpenAI_API(user=user)
     transcription = await openai.get_transcription_from_audio(file_path)
 
     os.remove(file_path)

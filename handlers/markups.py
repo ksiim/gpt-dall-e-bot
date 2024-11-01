@@ -349,7 +349,8 @@ close_markup = InlineKeyboardMarkup(
     ]
 )
 
-buy_premium_text = "Чтобы отправлять запросы к ChatGPT-4o нужно оформить подписку Plus или PRO по команде /premium "
+voice_rate_text = 'Чтобы нейросеть распознавала голосовые сообщения, нужно оформить подписку Plus или PRO по команде /premium'
+buy_premium_text = "Чтобы отправлять запросы к ChatGPT-4o нужно оформить подписку Plus или PRO по команде /premium"
 
 async def generate_model_markup(user: User):
     return InlineKeyboardMarkup(
