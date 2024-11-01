@@ -114,5 +114,8 @@ class OpenAI_API:
                 ],
                 max_tokens=300
             )
+            
+            await Orm.update_count_of_requests(self.chat_model.name, self.user)
+            
             return response.choices[0].message.content
         return None
