@@ -29,14 +29,12 @@ async def process_midjourney_prompt(message: Message):
     midjourney = MidJourney(message.from_user.id)
     hash = await midjourney.generate_image(prompt)
     if hash:
-        await asyncio.gather(
-            Orm.add_midjourney_task(
-                telegram_id=message.from_user.id,
-                task_hash=hash, prompt=prompt, type_='imagine'
-                ),
-            prompt_taken_message(message),
-            process_midjourney_image_progress(message, hash, first=True)
+        await Orm.add_midjourney_task(
+            telegram_id=message.from_user.id,
+            task_hash=hash, prompt=prompt, type_='imagine'
         )
+        await prompt_taken_message(message)
+        await process_midjourney_image_progress(message, hash, first=True)
     else:
         await message.answer(
             text=exception_on_midjourney_text,
@@ -69,13 +67,11 @@ async def process_midjourney_image_progress(message: Message, hash: str, method=
             hash=hash,
         ) if method in ['imagine', 'variation', 'reroll'] else None
         
-        await asyncio.gather(
-            message.answer_photo(
-                photo=photo,
-                reply_markup=keyboard
-            ),
-            midjourney.delete_image(file_name)
+        await message.answer_photo(
+            photo=photo,
+            reply_markup=keyboard
         )
+        await midjourney.delete_image(file_name)
         
 @dp.callback_query(lambda callback: callback.data.startswith("variation:"))
 async def variation_callback(callback: CallbackQuery):
@@ -86,15 +82,13 @@ async def variation_callback(callback: CallbackQuery):
     hash = await midjourney.variation(hash, choice)
     
     if hash:
-        await asyncio.gather(
-            prompt_taken_message(callback.message),
-            Orm.add_midjourney_task(
-                telegram_id=callback.from_user.id,
-                task_hash=hash,
-                type_='variation'
-            ),
-            process_midjourney_image_progress(callback.message, hash, 'variation', first=True)
-        )
+        await prompt_taken_message(callback.message),
+        await Orm.add_midjourney_task(
+            telegram_id=callback.from_user.id,
+            task_hash=hash,
+            type_='variation'
+        ),
+        await process_midjourney_image_progress(callback.message, hash, 'variation', first=True)
     else:
         await callback.message.answer(exception_on_midjourney_text)
         
